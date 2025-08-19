@@ -14,4 +14,5 @@ The design for this project is heavily inspired on DOOM's engine, each step of t
 
 - [Lex man page](https://pubs.opengroup.org/onlinepubs/9799919799/utilities/lex.html)
 - [DOOM source code](https://github.dev/id-Software/DOOM)
+- [Rust documentation](https://doc.rust-lang.org/)
 - ...
