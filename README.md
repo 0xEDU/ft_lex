@@ -8,7 +8,16 @@ This is an École 42 project about recreating the `lex` utility, keeping it POSI
 
 ## Project Design
 
-The design for this project is heavily inspired on DOOM's engine, each step of the lexer should be in a self-contained Rust module that expose only public I/O interfaces, the logic of the module should be private to the module.
+- The design for this project is heavily inspired on DOOM's engine, each step of the lexer should be in a self-contained Rust module that expose only public I/O interfaces, the logic of the module should be private to the module.
+- Error handling should be done by bubbling up a value from LexError enum
+
+## Modules
+
+1. Frontend module.
+    - Description: Should be responsible for opening input file(s), parsing it (POSIX-compliant) and generating a data structure containing relevant information about the file
+    - Input: file_name (String or Vec<String>) and options (TBD)
+    - Output: TBD
+2. ...
 
 ## Reference
 
