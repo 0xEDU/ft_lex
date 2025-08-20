@@ -35,7 +35,7 @@ impl Options {
                     options.verbose = true;
                 }
                 operand => {
-                    if operand.starts_with("-") {
+                    if operand.starts_with("-") && operand != "-" {
                         return Err(LexError::FrontendError("Invalid argument".to_string()));
                     }
                     options.operands.push(operand.to_string())
