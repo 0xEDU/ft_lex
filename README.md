@@ -14,9 +14,9 @@ This is an École 42 project about recreating the `lex` utility, keeping it POSI
 ## Modules
 
 1. Frontend module.
-    - Description: Should be responsible for opening input file(s), parsing it (POSIX-compliant) and generating a data structure containing relevant information about the file
-    - Input: file_name (String or Vec<String>) and options (TBD)
-    - Output: TBD
+    - Description: Should be responsible for handling options, opening and parsing (POSIX-compliant) input file(s), and generating a data structure containing relevant information about the file.
+    - Input: file_name (String or Vec<String>) and options (TBD).
+    - Output: An Intermediate Representation of rules and actions (TBD).
 2. ...
 
 ## Reference
