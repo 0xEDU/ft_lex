@@ -22,9 +22,9 @@ Basically `lex` will parse a `lexer.l` source file, which is divided into 3 sect
 ## Modules
 
 1. Frontend module.
-    - Description: Should be responsible for handling options, opening and parsing (POSIX-compliant) input file(s), and generating a data structure containing relevant information about the file.
-    - Input: file_name (String or Vec<String>) and options (TBD).
-    - Output: An Intermediate Representation of rules and actions (TBD).
+    - Description: Should be responsible for handling options, opening and parsing (POSIX-compliant) input file(s) and generating a data structure containing relevant information about the file.
+    - Input: Command line arguments.
+    - Output: An Intermediate Representation of the parsed lex source.
 2. ...
 
 ## Reference
