@@ -17,11 +17,11 @@ Basically `lex` will parse a `lexer.l` source file, which is divided into 3 sect
 ## Project Design
 
 - The design for this project is heavily inspired on DOOM's engine, each step of the lexer should be in a self-contained Rust module that expose only public I/O interfaces, the logic of the module should be private to the module.
-- Error handling should be done by bubbling up a value from LexError enum
+- Error handling should be done by bubbling up a value from LexError enum.
 
 ## Modules
 
-1. Frontend module.
+1. Input Loader.
     - Description: Should be responsible for handling options, opening and parsing (POSIX-compliant) input file(s) and generating a data structure containing relevant information about the file.
     - Input: Command line arguments.
     - Output: An Intermediate Representation of the parsed lex source.
