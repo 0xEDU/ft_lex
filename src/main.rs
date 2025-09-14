@@ -1,7 +1,7 @@
 mod frontend;
-mod lex_error;
+mod shared;
 
-use crate::lex_error::LexError;
+use crate::shared::lex_error::LexError;
 
 fn main() -> Result<(), LexError> {
     let intermediate_representation = frontend::build_ir_from_input()?;
