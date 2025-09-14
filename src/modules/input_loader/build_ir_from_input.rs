@@ -1,6 +1,6 @@
 use std::env;
 
-use crate::{frontend::options::Options, shared::LexError};
+use crate::{modules::input_loader::options::Options, shared::LexError};
 
 pub fn build_ir_from_input() -> Result<String, LexError> {
     let arguments = env::args().skip(1);
