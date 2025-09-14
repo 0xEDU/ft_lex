@@ -2,8 +2,9 @@ mod modules;
 mod shared;
 
 use crate::shared::LexError;
+use modules::input_loader;
 
 fn main() -> Result<(), LexError> {
-    let intermediate_representation = modules::input_loader::build_ir_from_input()?;
+    let intermediate_representation = input_loader::invoke();
     Ok(())
 }

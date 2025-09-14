@@ -1,4 +1,4 @@
-pub mod build_ir_from_input;
+pub mod invoke;
 mod options;
 
-pub use build_ir_from_input::build_ir_from_input;
+pub use invoke::invoke;
