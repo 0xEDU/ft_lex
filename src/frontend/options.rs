@@ -1,7 +1,7 @@
 use std::env::Args;
 use std::iter::Skip;
 
-use crate::shared::lex_error::LexError;
+use crate::shared::LexError;
 
 #[derive(Debug)]
 pub struct Options {
