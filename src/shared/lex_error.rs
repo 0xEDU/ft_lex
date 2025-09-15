@@ -2,13 +2,13 @@ use std::fmt;
 
 #[derive(Debug)]
 pub enum LexError {
-    FrontendError(String),
+    InputLoaderError(String),
 }
 
 impl fmt::Display for LexError {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
-            LexError::FrontendError(msg) => write!(f, "Frontend error: {}", msg),
+            LexError::InputLoaderError(msg) => write!(f, "Frontend error: {}", msg),
         }
     }
 }
@@ -19,7 +19,7 @@ mod tests {
 
     #[test]
     fn test_frontend_error_debug() {
-        let err = LexError::FrontendError("test message".to_string());
+        let err = LexError::InputLoaderError("test message".to_string());
         let debug_str = format!("{:?}", err);
         assert!(debug_str.contains("FrontendError"));
         assert!(debug_str.contains("test message"));
@@ -27,7 +27,7 @@ mod tests {
 
     #[test]
     fn test_frontend_error_display() {
-        let err = LexError::FrontendError("test message".to_string());
+        let err = LexError::InputLoaderError("test message".to_string());
         let display_str = format!("{}", err);
         assert_eq!(display_str, "Frontend error: test message");
     }

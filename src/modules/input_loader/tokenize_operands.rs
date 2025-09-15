@@ -6,7 +6,7 @@ pub fn tokenize_operands(operands: Vec<String>) -> Result<(), LexError> {
     for operand in operands {
         let file = match File::open(operand) {
             Ok(f) => f,
-            Err(_) => return Err(LexError::FrontendError("Couldn't open file.".to_string())),
+            Err(_) => return Err(LexError::InputLoaderError("Couldn't open file.".to_string())),
         };
 
         let buf_reader = BufReader::new(file);
