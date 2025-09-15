@@ -43,7 +43,7 @@ impl Options {
                 }
                 operand => {
                     if operand.starts_with("-") && operand != "-" {
-                        return Err(LexError::InputLoaderError("Invalid argument".to_string()));
+                        return Err(LexError::GenericError("Invalid argument".to_string()));
                     }
                     options.operands.push(operand.to_string())
                 }
@@ -150,7 +150,7 @@ mod tests {
         let result = Options::from_iterator(args);
         assert!(result.is_err());
         match result.unwrap_err() {
-            LexError::InputLoaderError(msg) => assert_eq!(msg, "Invalid argument"),
+            LexError::GenericError(msg) => assert_eq!(msg, "Invalid argument"),
         }
     }
 
@@ -160,7 +160,7 @@ mod tests {
         let result = Options::from_iterator(args);
         assert!(result.is_err());
         match result.unwrap_err() {
-            LexError::InputLoaderError(msg) => assert_eq!(msg, "Invalid argument"),
+            LexError::GenericError(msg) => assert_eq!(msg, "Invalid argument"),
         }
     }
 
