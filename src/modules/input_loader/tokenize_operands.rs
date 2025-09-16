@@ -2,18 +2,29 @@ use std::{fs::File, io::{BufRead, BufReader}};
 
 use crate::shared::LexError;
 
+enum TokenizerStates {
+    Definitions,
+    Rules,
+    UserSubroutines
+}
+
+fn tokenize_definitions(line: String) {
+    
+}
+
 pub fn tokenize_operands(operands: Vec<String>) -> Result<(), LexError> {
     for operand in operands {
-        let file = match File::open(operand) {
-            Ok(f) => f,
-            Err(_) => return Err(LexError::InputLoaderError("Couldn't open file.".to_string())),
-        };
-
+        let file = File::open(operand)?;
         let buf_reader = BufReader::new(file);
+
+        let current_state = TokenizerStates::Definitions;
         for line in buf_reader.lines() {
-            match line {
-                Ok(line) => println!("{}", line),
-                Err(_) => println!("oops")
+            let line = line?;
+
+            match current_state {
+                TokenizerStates::Definitions => tokenize_definitions(line),
+                TokenizerStates::Rules => {},
+                TokenizerStates::UserSubroutines => {},
             }
         }
     }
