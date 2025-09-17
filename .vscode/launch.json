@@ -20,7 +20,7 @@
                     "kind": "bin"
                 }
             },
-            "args": ["Makefile"],
+            "args": ["examples/pdf.l"],
             "cwd": "${workspaceFolder}"
         },
         {
