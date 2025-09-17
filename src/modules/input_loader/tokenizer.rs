@@ -1,5 +1,6 @@
 use std::{
-    fs::File, io::{BufRead, BufReader}
+    fs::File,
+    io::{BufRead, BufReader},
 };
 
 use crate::shared::LexError;
@@ -13,12 +14,14 @@ enum TokenizerState {
 
 pub struct Tokenizer {
     state: TokenizerState,
+    is_inside_code_block: bool,
 }
 
 impl Tokenizer {
     pub fn new() -> Self {
         Tokenizer {
             state: TokenizerState::Definitions,
+            is_inside_code_block: false,
         }
     }
 
@@ -27,30 +30,45 @@ impl Tokenizer {
             TokenizerState::Definitions => {
                 self.state = TokenizerState::Rules;
             }
-            TokenizerState::Rules => {
-                self.state = TokenizerState::UserSubroutines
-            }
+            TokenizerState::Rules => self.state = TokenizerState::UserSubroutines,
             _ => {}
         }
     }
 
-    fn tokenize_definitions(line: String) {
+    fn tokenize_definitions(&mut self, line: String) {
+        if self.is_inside_code_block {
+            if line.starts_with("%}") {
+                println!("code block end");
+                self.is_inside_code_block = false;
+                return;
+            }
+            println!("line inside code block!");
+            return;
+        }
+
         let mut iter = line.chars();
         match iter.next() {
-            Some(' ' | '\t' ) => {
+            Some(' ' | '\t') => {
                 println!("found a line of C code")
             }
-            Some('%') => {
-                let next_char = iter.next();
-                match next_char {
-                    Some('{') => { println!("code block start") }
-                    Some('}') => { println!("code block end") }
-                    Some(c) => { println!("start condition") } // Branch out valid start conditions
-                    None => { println!("syntax error") }
+            Some('%') => match iter.next() {
+                Some('{') => {
+                    println!("code block start");
+                    self.is_inside_code_block = true;
                 }
+                Some(c) => {
+                    println!("start condition")
+                } // Branch out valid start conditions
+                None => {
+                    println!("syntax error")
+                }
+            },
+            Some(_) => {
+                println!("name defition")
             }
-            Some(_) => { println!("name defition") }
-            None => { println!("blank line, shouldn't reach this") }
+            None => {
+                println!("blank line, shouldn't reach this")
+            }
         }
     }
 
@@ -62,20 +80,24 @@ impl Tokenizer {
 
             for line in buf_reader.lines() {
                 let line = line?;
-                if line.len() == 0 {
+                if line.is_empty() {
                     current_line += 1;
                     continue;
                 }
 
-                if line == "%%" {
+                if line == "%%" && !self.is_inside_code_block {
                     self.next();
                 }
 
                 print!("current line: {}: ", current_line);
                 match self.state {
-                    TokenizerState::Definitions => Self::tokenize_definitions(line),
-                    TokenizerState::Rules => { println!("") }
-                    TokenizerState::UserSubroutines => { println!("") }
+                    TokenizerState::Definitions => self.tokenize_definitions(line),
+                    TokenizerState::Rules => {
+                        println!("")
+                    }
+                    TokenizerState::UserSubroutines => {
+                        println!("")
+                    }
                 }
                 current_line += 1;
             }
