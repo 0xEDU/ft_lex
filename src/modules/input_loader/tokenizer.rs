@@ -47,6 +47,9 @@ impl Tokenizer {
         }
 
         let mut iter = line.chars();
+        // %(alpha) -> split by white space, then check first element
+        // in vector, do pattern matching for valid patterns like 
+        // %p or %pointer
         match iter.next() {
             Some(' ' | '\t') => {
                 println!("found a line of C code")
