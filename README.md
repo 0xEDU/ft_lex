@@ -32,4 +32,5 @@ Basically `lex` will parse a `lexer.l` source file, which is divided into 3 sect
 - [Lex man page](https://pubs.opengroup.org/onlinepubs/9799919799/utilities/lex.html)
 - [DOOM source code](https://github.dev/id-Software/DOOM)
 - [Rust documentation](https://doc.rust-lang.org/)
+- Compilers, Principles, Techniques, and Tools - Aho, Lam, Sethi, Ullman
 - ...
