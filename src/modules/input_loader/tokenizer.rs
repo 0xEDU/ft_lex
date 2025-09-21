@@ -5,6 +5,7 @@ use crate::shared::LexError;
 struct Cursor<'a> {
     content: &'a [u8],
     current: usize,
+    line: usize,
 }
 
 impl<'a> Cursor<'a> {
@@ -13,6 +14,7 @@ impl<'a> Cursor<'a> {
         Cursor { 
             content,
             current: 0,
+            line: 0,
          }
     }
 
@@ -24,11 +26,11 @@ impl<'a> Cursor<'a> {
         self.current >= self.content.len()
     }
 
-    pub fn advance_one(&mut self) -> Option<&u8> {
-        self.advance(1)
+    pub fn consume_one(&mut self) -> Option<&u8> {
+        self.consume(1)
     }
 
-    pub fn advance(&mut self, quantity: usize) -> Option<&u8> {
+    pub fn consume(&mut self, quantity: usize) -> Option<&u8> {
         let byte = self.content.get(self.current);
         self.current += quantity;
         return byte;
@@ -73,15 +75,22 @@ impl Tokenizer {
 
         while !cursor.is_at_end() {
             if matches!(cursor.peek(), Some(b'\n')) {
-                
+                cursor.line += 1;
+                cursor.consume_one();
             }
+
+            // should skip tabs and stuff?
 
             match state {
                 TokenizerState::Definitions => {
                     if cursor.is_at_str("%%") {
                         println!("found a section delimiter");
-                        cursor.advance(2);
+                        cursor.consume(2);
                         continue;
+                    }
+                    if cursor.is_at_str("%{") {
+                        println!("found a code block"):
+                        // custom function to conseume entire code block
                     }
                 },
                 TokenizerState::Rules => println!("rules"),
