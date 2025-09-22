@@ -71,10 +71,11 @@ impl Tokenizer {
     fn tokenize_operand(&mut self, operand: String) -> Result<(), LexError> {
         let content = fs::read_to_string(operand)?;
         let mut cursor = Cursor::new(&content);
-        let state = TokenizerState::Rules;
+        let state = TokenizerState::Definitions;
 
         while !cursor.is_at_end() {
             if matches!(cursor.peek(), Some(b'\n')) {
+                println!("");
                 cursor.line += 1;
                 cursor.consume_one();
             }
@@ -83,13 +84,15 @@ impl Tokenizer {
 
             match state {
                 TokenizerState::Definitions => {
+                    print!("{}", *cursor.peek().unwrap() as char);
                     if cursor.is_at_str("%%") {
                         println!("found a section delimiter");
                         cursor.consume(2);
                         continue;
                     }
                     if cursor.is_at_str("%{") {
-                        println!("found a code block"):
+                        cursor.consume(2);
+                        println!("found a code block");
                         // custom function to conseume entire code block
                     }
                 },
@@ -97,6 +100,7 @@ impl Tokenizer {
                 TokenizerState::UserSubroutines => println!("user subroutes")
                 
             }
+            cursor.consume_one();
         }
         return Ok(());
     }
