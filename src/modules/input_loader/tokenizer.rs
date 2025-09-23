@@ -4,8 +4,9 @@ use crate::shared::LexError;
 
 struct Cursor<'a> {
     content: &'a [u8],
-    current: usize,
-    line: usize,
+    current_position: usize,
+    line_number: usize,
+    current_line: Vec<u8>
 }
 
 impl<'a> Cursor<'a> {
@@ -13,17 +14,18 @@ impl<'a> Cursor<'a> {
         let content: &'a [u8] = content.as_bytes();
         Cursor { 
             content,
-            current: 0,
-            line: 0,
+            current_position: 0,
+            line_number: 0,
+            current_line: Vec::new(),
          }
     }
 
     pub fn peek(&self) -> Option<&u8> {
-        self.content.get(self.current)
+        self.content.get(self.current_position)
     }
 
     pub fn is_at_end(&self) -> bool {
-        self.current >= self.content.len()
+        self.current_position >= self.content.len()
     }
 
     pub fn consume_one(&mut self) -> Option<&u8> {
@@ -31,14 +33,39 @@ impl<'a> Cursor<'a> {
     }
 
     pub fn consume(&mut self, quantity: usize) -> Option<&u8> {
-        let byte = self.content.get(self.current);
-        self.current += quantity;
+        let byte = self.content.get(self.current_position);
+        self.current_position += quantity;
         return byte;
     }
 
     pub fn is_at_str(&self, s: &str) -> bool {
-        let end = self.current + s.len();
-        end <= self.content.len() && &self.content[self.current..end] == s.as_bytes()
+        let end = self.current_position + s.len();
+        end <= self.content.len() && &self.content[self.current_position..end] == s.as_bytes()
+    }
+
+    pub fn is_current_line_empty(&self) -> bool {
+        self.current_line.len() == 0
+    }
+
+    pub fn line_starts_with(&self, s: &str) -> bool {
+        let len = s.len();
+        len <= self.content.len()
+            && len <= self.current_line.len()
+            && &self.current_line[0..len] == s.as_bytes()
+    }
+
+    pub fn get_next_line(&mut self) {
+        self.current_line.clear();
+        while !self.is_at_end() && !matches!(self.peek(), Some(b'\n')) {
+            match self.consume_one() {
+                Some(&c) => self.current_line.push(c),
+                None => println!("this should be unreachable")
+            }
+        }
+        if matches!(self.peek(), Some(b'\n')) {
+            self.consume_one();
+            self.line_number += 1;
+        }
     }
 }
 
@@ -49,66 +76,66 @@ enum TokenizerState {
     UserSubroutines,
 }
 
-pub struct Tokenizer {
-    state: TokenizerState,
+fn tokenize_operand(operand: String) -> Result<(), LexError> {
+    let content = fs::read_to_string(operand)?;
+    let mut cursor = Cursor::new(&content);
+    let mut state = TokenizerState::Definitions;
+
+    while !cursor.is_at_end() {
+        cursor.get_next_line();
+        if cursor.is_current_line_empty() {
+            continue;
+        }
+
+        match state {
+            TokenizerState::Definitions => {
+                if cursor.line_starts_with(" ") {
+                    print!("line:{}:", cursor.line_number);
+                    println!("found C code line");
+                    // copy the C code line
+                    continue;
+                }
+                if cursor.line_starts_with("%%") {
+                    print!("line:{}:", cursor.line_number);
+                    println!("found a section delimiter");
+                    state = TokenizerState::Rules; // hop to next state
+                    continue;
+                }
+                if cursor.line_starts_with("%{") {
+                    print!("line:{}:", cursor.line_number);
+                    println!("found a code block");
+                    // custom function to consume entire code block
+                    continue;
+                }
+                if cursor.line_starts_with("%option") {
+                    print!("line:{}:", cursor.line_number);
+                    println!("found a start option");
+                    // copy start options
+                    continue;
+                }
+                if cursor.line_starts_with("%s") || cursor.line_starts_with("%x") {
+                    print!("line:{}:", cursor.line_number);
+                    println!("found a start condition");
+                    // copy start options
+                    continue;
+                }
+                if cursor.peek().is_some() {
+                    print!("line:{}:", cursor.line_number);
+                    println!("found a macro");
+                    // handle macros
+                    continue;
+                }
+            },
+            TokenizerState::Rules => println!("rules"),
+            TokenizerState::UserSubroutines => println!("user subroutes")
+        }
+    }
+    return Ok(());
 }
 
-impl Tokenizer {
-    pub fn new() -> Self {
-        Tokenizer {
-            state: TokenizerState::Definitions,
-        }
+pub fn tokenize_operands(operands: Vec<String>) -> Result<(), LexError> {
+    for operand in operands {
+        tokenize_operand(operand)?;
     }
-
-    fn next_state(&mut self) {
-        match self.state {
-            TokenizerState::Definitions => self.state = TokenizerState::Rules,
-            TokenizerState::Rules => self.state = TokenizerState::UserSubroutines,
-            _ => {}
-        }
-    }
-
-    fn tokenize_operand(&mut self, operand: String) -> Result<(), LexError> {
-        let content = fs::read_to_string(operand)?;
-        let mut cursor = Cursor::new(&content);
-        let state = TokenizerState::Definitions;
-
-        while !cursor.is_at_end() {
-            if matches!(cursor.peek(), Some(b'\n')) {
-                println!("");
-                cursor.line += 1;
-                cursor.consume_one();
-            }
-
-            // should skip tabs and stuff?
-
-            match state {
-                TokenizerState::Definitions => {
-                    print!("{}", *cursor.peek().unwrap() as char);
-                    if cursor.is_at_str("%%") {
-                        println!("found a section delimiter");
-                        cursor.consume(2);
-                        continue;
-                    }
-                    if cursor.is_at_str("%{") {
-                        cursor.consume(2);
-                        println!("found a code block");
-                        // custom function to conseume entire code block
-                    }
-                },
-                TokenizerState::Rules => println!("rules"),
-                TokenizerState::UserSubroutines => println!("user subroutes")
-                
-            }
-            cursor.consume_one();
-        }
-        return Ok(());
-    }
-
-    pub fn tokenize_operands(&mut self, operands: Vec<String>) -> Result<(), LexError> {
-        for operand in operands {
-            self.tokenize_operand(operand)?;
-        }
-        return Ok(());
-    }
+    return Ok(());
 }
