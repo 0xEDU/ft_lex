@@ -103,7 +103,18 @@ fn tokenize_operand(operand: String) -> Result<(), LexError> {
                 }
                 if cursor.line_starts_with("%{") {
                     print!("line:{}:", cursor.line_number);
-                    println!("found a code block");
+                    // refactor based on GPT suggestions
+                    println!("found a code block, chomping...");
+                    let mut code_block : Vec<u8> = vec![];
+                    loop  {
+                        if cursor.line_starts_with("%}") {
+                            break;
+                        }
+                        cursor.get_next_line();
+                        code_block.append(&mut cursor.current_line.clone());
+                        code_block.push(b'\n');
+                    }
+                    code_block.truncate(code_block.len() - 3);
                     // custom function to consume entire code block
                     continue;
                 }
