@@ -6,7 +6,6 @@ struct Cursor<'a> {
     content: &'a [u8],
     current_position: usize,
     line_number: usize,
-    current_line: Vec<u8>
 }
 
 impl<'a> Cursor<'a> {
@@ -16,56 +15,42 @@ impl<'a> Cursor<'a> {
             content,
             current_position: 0,
             line_number: 0,
-            current_line: Vec::new(),
          }
     }
 
-    pub fn peek(&self) -> Option<&u8> {
-        self.content.get(self.current_position)
+    pub fn peek(&self) -> Option<u8> {
+        self.content.get(self.current_position).copied()
     }
 
     pub fn is_at_end(&self) -> bool {
         self.current_position >= self.content.len()
     }
 
-    pub fn consume_one(&mut self) -> Option<&u8> {
-        self.consume(1)
+    pub fn consume_one(&mut self) -> Option<u8> {
+        let byte = self.peek();
+        self.consume(1);
+        byte
     }
 
-    pub fn consume(&mut self, quantity: usize) -> Option<&u8> {
-        let byte = self.content.get(self.current_position);
-        self.current_position += quantity;
-        return byte;
+    pub fn consume(&mut self, quantity: usize) {
+        self.current_position = (self.current_position + quantity).min(self.content.len());
     }
 
-    pub fn is_at_str(&self, s: &str) -> bool {
-        let end = self.current_position + s.len();
-        end <= self.content.len() && &self.content[self.current_position..end] == s.as_bytes()
-    }
+    pub fn next_line(&mut self) -> Option<Vec<u8>> {
+        if self.is_at_end() {
+            return None
+        }
 
-    pub fn is_current_line_empty(&self) -> bool {
-        self.current_line.len() == 0
-    }
-
-    pub fn line_starts_with(&self, s: &str) -> bool {
-        let len = s.len();
-        len <= self.content.len()
-            && len <= self.current_line.len()
-            && &self.current_line[0..len] == s.as_bytes()
-    }
-
-    pub fn get_next_line(&mut self) {
-        self.current_line.clear();
-        while !self.is_at_end() && !matches!(self.peek(), Some(b'\n')) {
-            match self.consume_one() {
-                Some(&c) => self.current_line.push(c),
-                None => println!("this should be unreachable")
+        let mut line = Vec::new();
+        while let Some(c) = self.consume_one() {
+            if c == b'\n' {
+                self.line_number += 1;
+                break;
             }
+            line.push(c);
         }
-        if matches!(self.peek(), Some(b'\n')) {
-            self.consume_one();
-            self.line_number += 1;
-        }
+        
+        Some(line)
     }
 }
 
@@ -81,56 +66,52 @@ fn tokenize_operand(operand: String) -> Result<(), LexError> {
     let mut cursor = Cursor::new(&content);
     let mut state = TokenizerState::Definitions;
 
-    while !cursor.is_at_end() {
-        cursor.get_next_line();
-        if cursor.is_current_line_empty() {
+    while let Some(line) = cursor.next_line() {
+        if line.is_empty() {
             continue;
         }
 
         match state {
             TokenizerState::Definitions => {
-                if cursor.line_starts_with(" ") {
+                if line.starts_with(b" ") {
                     print!("line:{}:", cursor.line_number);
                     println!("found C code line");
                     // copy the C code line
                     continue;
                 }
-                if cursor.line_starts_with("%%") {
+                if line.starts_with(b"%%") {
                     print!("line:{}:", cursor.line_number);
                     println!("found a section delimiter");
                     state = TokenizerState::Rules; // hop to next state
                     continue;
                 }
-                if cursor.line_starts_with("%{") {
+                if line.starts_with(b"%{") {
                     print!("line:{}:", cursor.line_number);
                     // refactor based on GPT suggestions
                     println!("found a code block, chomping...");
-                    let mut code_block : Vec<u8> = vec![];
-                    loop  {
-                        if cursor.line_starts_with("%}") {
+                    let mut code_block : Vec<u8> = Vec::new();
+                    while let Some(inner) = cursor.next_line() {
+                        if inner.starts_with(b"%}") {
                             break;
                         }
-                        cursor.get_next_line();
-                        code_block.append(&mut cursor.current_line.clone());
+                        code_block.extend_from_slice(&inner);
                         code_block.push(b'\n');
                     }
-                    code_block.truncate(code_block.len() - 3);
-                    // custom function to consume entire code block
                     continue;
                 }
-                if cursor.line_starts_with("%option") {
+                if line.starts_with(b"%option") {
                     print!("line:{}:", cursor.line_number);
                     println!("found a start option");
                     // copy start options
                     continue;
                 }
-                if cursor.line_starts_with("%s") || cursor.line_starts_with("%x") {
+                if line.starts_with(b"%s") || line.starts_with(b"%x") {
                     print!("line:{}:", cursor.line_number);
                     println!("found a start condition");
                     // copy start options
                     continue;
                 }
-                if cursor.peek().is_some() {
+                if !line.is_empty() {
                     print!("line:{}:", cursor.line_number);
                     println!("found a macro");
                     // handle macros
