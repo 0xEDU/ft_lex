@@ -111,12 +111,7 @@ fn tokenize_operand(operand: String) -> Result<(), LexError> {
                     }
                     continue;
                 }
-                if line.starts_with(b"%option") {
-                    print!("line:{}:", cursor.line_number);
-                    println!("found a start option");
-                    // copy start options
-                    continue;
-                }
+                // Opts are: pnaeko sx array/pointer
                 if line.starts_with(b"%s") || line.starts_with(b"%x") {
                     print!("line:{}:", cursor.line_number);
                     println!("found a start condition");
