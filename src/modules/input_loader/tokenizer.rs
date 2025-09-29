@@ -87,7 +87,6 @@ fn tokenize_operand(operand: String) -> Result<(), LexError> {
                 }
                 if line.starts_with(b"%{") {
                     print!("line:{}:", cursor.line_number);
-                    // refactor based on GPT suggestions
                     println!("found a code block, chomping...");
                     let mut code_block : Vec<u8> = Vec::new();
                     while let Some(inner) = cursor.next_line() {
@@ -96,6 +95,19 @@ fn tokenize_operand(operand: String) -> Result<(), LexError> {
                         }
                         code_block.extend_from_slice(&inner);
                         code_block.push(b'\n');
+                    }
+                    continue;
+                }
+                if line.starts_with(b"/*") {
+                    print!("line:{}:", cursor.line_number);
+                    println!("found a comment block, chomping...");
+                    let mut comment_block : Vec<u8> = Vec::new();
+                    while let Some(inner) = cursor.next_line() {
+                        if inner.ends_with(b"*/") {
+                            break;
+                        }
+                        comment_block.extend_from_slice(&inner);
+                        comment_block.push(b'\n');
                     }
                     continue;
                 }
