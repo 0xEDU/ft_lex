@@ -11,11 +11,11 @@ struct Cursor<'a> {
 impl<'a> Cursor<'a> {
     pub fn new(content: &'a str) -> Self {
         let content: &'a [u8] = content.as_bytes();
-        Cursor { 
+        Cursor {
             content,
             current_position: 0,
             line_number: 0,
-         }
+        }
     }
 
     pub fn peek(&self) -> Option<u8> {
@@ -38,7 +38,7 @@ impl<'a> Cursor<'a> {
 
     pub fn next_line(&mut self) -> Option<Vec<u8>> {
         if self.is_at_end() {
-            return None
+            return None;
         }
 
         let mut line = Vec::new();
@@ -49,7 +49,7 @@ impl<'a> Cursor<'a> {
             }
             line.push(c);
         }
-        
+
         Some(line)
     }
 }
@@ -73,7 +73,7 @@ fn tokenize_operand(operand: String) -> Result<(), LexError> {
 
         match state {
             TokenizerState::Definitions => {
-                if line.starts_with(b" ") {
+                if line.starts_with(b" ") || line.starts_with(b"\t") {
                     print!("line:{}:", cursor.line_number);
                     println!("found C code line");
                     // copy the C code line
@@ -88,7 +88,7 @@ fn tokenize_operand(operand: String) -> Result<(), LexError> {
                 if line.starts_with(b"%{") {
                     print!("line:{}:", cursor.line_number);
                     println!("found a code block, chomping...");
-                    let mut code_block : Vec<u8> = Vec::new();
+                    let mut code_block: Vec<u8> = Vec::new();
                     while let Some(inner) = cursor.next_line() {
                         if inner.starts_with(b"%}") {
                             break;
@@ -101,7 +101,7 @@ fn tokenize_operand(operand: String) -> Result<(), LexError> {
                 if line.starts_with(b"/*") {
                     print!("line:{}:", cursor.line_number);
                     println!("found a comment block, chomping...");
-                    let mut comment_block : Vec<u8> = Vec::new();
+                    let mut comment_block: Vec<u8> = Vec::new();
                     while let Some(inner) = cursor.next_line() {
                         if inner.ends_with(b"*/") {
                             break;
@@ -112,21 +112,66 @@ fn tokenize_operand(operand: String) -> Result<(), LexError> {
                     continue;
                 }
                 // Opts are: pnaeko sx array/pointer
-                if line.starts_with(b"%s") || line.starts_with(b"%x") {
+                if line.starts_with(b"%s ") {
                     print!("line:{}:", cursor.line_number);
                     println!("found a start condition");
                     // copy start options
                     continue;
                 }
+                if line.starts_with(b"%x ") {
+                    print!("line:{}:", cursor.line_number);
+                    println!("found an exclusive start condition");
+                    // copy start options
+                    continue;
+                }
+                if line.starts_with(b"%array") {
+                    print!("line:{}:", cursor.line_number);
+                    println!("found an array scanner option");
+                    // copy start options
+                    continue;
+                }
+                if line.starts_with(b"%pointer") {
+                    print!("line:{}:", cursor.line_number);
+                    println!("found a pointer scanner option");
+                    // copy start options
+                    continue;
+                }
+                if line.starts_with(b"%p ")
+                    || line.starts_with(b"%n ")
+                    || line.starts_with(b"%a ")
+                    || line.starts_with(b"%e ")
+                    || line.starts_with(b"%k ")
+                    || line.starts_with(b"%o ")
+                {
+                    print!("line:{}:", cursor.line_number);
+                    println!("found a table size option");
+                    continue;
+                }
+                if line.starts_with(b"%") {
+                    print!("line:{}:", cursor.line_number);
+                    println!("malformed condition, shouldn't reach here");
+                    continue;
+                }
                 if !line.is_empty() {
                     print!("line:{}:", cursor.line_number);
-                    println!("found a macro");
+                    println!("found a macro definition");
                     // handle macros
                     continue;
                 }
-            },
-            TokenizerState::Rules => println!("rules"),
-            TokenizerState::UserSubroutines => println!("user subroutes")
+            }
+            TokenizerState::Rules => {
+                if line.starts_with(b"%%") {
+                    print!("line:{}:", cursor.line_number);
+                    println!("found a section delimiter");
+                    state = TokenizerState::UserSubroutines; // hop to next state
+                    continue;
+                } else {
+                    print!("line:{}:", cursor.line_number);
+                    println!("this is new");
+                    continue;
+                }
+            }
+            TokenizerState::UserSubroutines => println!("user subroutines"),
         }
     }
     return Ok(());
