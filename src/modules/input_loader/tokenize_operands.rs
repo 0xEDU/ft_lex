@@ -1,6 +1,9 @@
 use std::fs::{self};
 
-use crate::{modules::input_loader::cursor::Cursor, shared::LexError};
+use crate::{
+    modules::input_loader::cursor::Cursor,
+    shared::{logger, LexError},
+};
 
 #[derive(Debug)]
 enum TokenizerState {
@@ -9,8 +12,9 @@ enum TokenizerState {
     UserSubroutines,
 }
 
+// Result<Vec<Token>, LexError>
 fn tokenize_operand(operand: String) -> Result<(), LexError> {
-    let content = fs::read_to_string(operand)?;
+    let content = fs::read_to_string(&operand)?;
     let mut cursor = Cursor::new(&content);
     let mut state = TokenizerState::Definitions;
 
@@ -100,8 +104,7 @@ fn tokenize_operand(operand: String) -> Result<(), LexError> {
                     continue;
                 }
                 if line.starts_with(b"%") {
-                    print!("line:{}:", cursor.line_number);
-                    println!("malformed condition, shouldn't reach here");
+                    logger::tokenizer_error(&operand, cursor.line_number, "malformed option");
                     continue;
                 }
                 if !line.is_empty() {

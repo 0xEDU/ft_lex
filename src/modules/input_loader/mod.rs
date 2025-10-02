@@ -1,6 +1,6 @@
 mod cursor;
 pub mod invoke;
 mod options;
-mod tokenizer;
+mod tokenize_operands;
 
 pub use invoke::invoke;
