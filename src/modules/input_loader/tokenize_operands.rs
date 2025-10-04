@@ -109,15 +109,12 @@ fn tokenize_operand(operand: String) -> Result<Vec<Token>, LexError> {
     return Ok(tokens);
 }
 
-pub fn tokenize_operands(operands: Vec<String>) -> Result<(), LexError> {
+pub fn tokenize_operands(operands: Vec<String>) -> Result<Vec<Token>, LexError> {
     let mut tokens: Vec<Token> = Vec::new();
 
     for operand in operands {
         let mut operand_tokens = tokenize_operand(operand)?;
         tokens.append(&mut operand_tokens);
     }
-    for token in tokens {
-        println!("{:?}", token);
-    }
-    return Ok(());
+    return Ok(tokens);
 }
