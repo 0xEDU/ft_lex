@@ -1,7 +1,10 @@
 use std::fs::{self};
 
 use crate::{
-    modules::input_loader::{cursor::Cursor, tokens::{ScannerStorageKind, Token}},
+    modules::input_loader::{
+        cursor::Cursor,
+        tokens::{ScannerStorageKind, Token},
+    },
     shared::{logger, LexError},
 };
 

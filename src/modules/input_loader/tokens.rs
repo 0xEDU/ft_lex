@@ -1,7 +1,7 @@
 #[derive(Debug, PartialEq)]
 pub enum ScannerStorageKind {
     Array,
-    Pointer
+    Pointer,
 }
 
 #[derive(Debug, PartialEq)]
