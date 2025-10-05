@@ -3,12 +3,14 @@ use std::{fmt, io};
 #[derive(Debug)]
 pub enum LexError {
     GenericError(String),
+    ParserError
 }
 
 impl fmt::Display for LexError {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             LexError::GenericError(msg) => write!(f, "{}", msg),
+            LexError::ParserError => write!(f, "parser error")
         }
     }
 }
