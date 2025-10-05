@@ -5,7 +5,7 @@ use crate::{
         cursor::Cursor,
         tokens::{ScannerStorageKind, Token},
     },
-    shared::{lex_error, logger, LexError},
+    shared::{logger, LexError},
 };
 
 #[derive(Debug)]
@@ -87,7 +87,7 @@ fn tokenize_operand(operand: String) -> Result<Vec<Token>, LexError> {
                 }
                 if line.starts_with(b"%") {
                     logger::tokenizer_error(&operand, cursor.line_number, "malformed option");
-                    return Err(LexError::GenericError("invalid_token".to_string()))
+                    return Err(LexError::GenericError("invalid_token".to_string()));
                 }
                 if !line.is_empty() {
                     tokens.push(Token::MacroDefinition(line));
