@@ -18,6 +18,10 @@ fn is_valid_identifier(name: &[u8]) -> bool {
         .all(|&c| c == b'_' || c.is_ascii_alphanumeric())
 }
 
+fn parse_macro(line: Vec<u8>) -> (Vec<u8>, Vec<u8>) {
+    return (Vec::new(), Vec::new())
+}
+
 fn parse_start_condition(start_condition: Vec<u8>) -> Result<Vec<Vec<u8>>, LexError> {
     let conditions: Vec<Vec<u8>> = Vec::new();
 
@@ -67,6 +71,9 @@ pub fn parse_tokens(tokens: Vec<Token>) -> Result<LexProgram, LexError> {
                     .extend_from_slice(&parsed_start_condition);
             }
             Token::ScannerStorage(kind) => lex_program.storage_kind = kind,
+            Token::MacroDefinition(line) => {
+                let macro_definition = parse_macro(line);
+            },
             Token::UserSubroutine(line) => {
                 lex_program.user_subroutines.extend_from_slice(&line);
                 lex_program.user_subroutines.push(b'\n');
