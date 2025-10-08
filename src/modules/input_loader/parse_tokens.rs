@@ -19,6 +19,16 @@ fn is_valid_identifier(name: &[u8]) -> bool {
 }
 
 fn parse_macro(line: Vec<u8>) -> (Vec<u8>, Vec<u8>) {
+    let names = line
+        .split(|&c| c == b' ' || c == b'\t')
+        .filter(|s| !s.is_empty())
+        .map(|s| s.to_vec())
+        .collect::<Vec<_>>();
+
+    for name in names {
+        println!("{:?}", name);
+    }
+
     return (Vec::new(), Vec::new())
 }
 
