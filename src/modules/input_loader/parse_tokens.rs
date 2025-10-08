@@ -18,18 +18,26 @@ fn is_valid_identifier(name: &[u8]) -> bool {
         .all(|&c| c == b'_' || c.is_ascii_alphanumeric())
 }
 
-fn parse_macro(line: Vec<u8>) -> (Vec<u8>, Vec<u8>) {
+fn parse_macro(line: Vec<u8>) -> Result<(Vec<u8>, Vec<u8>), LexError> {
     let names = line
         .split(|&c| c == b' ' || c == b'\t')
         .filter(|s| !s.is_empty())
         .map(|s| s.to_vec())
         .collect::<Vec<_>>();
 
+    if names.len() != 2 {
+        logger::parser_error_str(format!(
+            "invalid macro definition: {}",
+            String::from_utf8_lossy(&line)
+        ));
+        return Err(LexError::ParserError)
+    }
+
     for name in names {
         println!("{:?}", name);
     }
 
-    return (Vec::new(), Vec::new())
+    return Ok((Vec::new(), Vec::new()))
 }
 
 fn parse_start_condition(start_condition: Vec<u8>) -> Result<Vec<Vec<u8>>, LexError> {
@@ -45,7 +53,7 @@ fn parse_start_condition(start_condition: Vec<u8>) -> Result<Vec<Vec<u8>>, LexEr
     for name in &names {
         if !is_valid_identifier(name) {
             logger::parser_error_str(format!(
-                "invalid start condition {}",
+                "invalid start condition: {}",
                 String::from_utf8_lossy(name)
             ));
             return Err(LexError::ParserError)
