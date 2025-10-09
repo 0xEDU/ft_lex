@@ -25,7 +25,9 @@ fn parse_macro(line: Vec<u8>) -> Result<(Vec<u8>, Vec<u8>), LexError> {
         .map(|s| s.to_vec())
         .collect::<Vec<_>>();
 
-    if names.len() != 2 {
+    // TODO - validate if regex is valid
+
+    if names.len() != 2 || !is_valid_identifier(&names[0]) {
         logger::parser_error_str(format!(
             "invalid macro definition: {}",
             String::from_utf8_lossy(&line)
@@ -33,11 +35,7 @@ fn parse_macro(line: Vec<u8>) -> Result<(Vec<u8>, Vec<u8>), LexError> {
         return Err(LexError::ParserError)
     }
 
-    for name in names {
-        println!("{:?}", name);
-    }
-
-    return Ok((Vec::new(), Vec::new()))
+    return Ok((names[0].clone(), names[1].clone()))
 }
 
 fn parse_start_condition(start_condition: Vec<u8>) -> Result<Vec<Vec<u8>>, LexError> {
@@ -90,7 +88,8 @@ pub fn parse_tokens(tokens: Vec<Token>) -> Result<LexProgram, LexError> {
             }
             Token::ScannerStorage(kind) => lex_program.storage_kind = kind,
             Token::MacroDefinition(line) => {
-                let macro_definition = parse_macro(line);
+                let (name, body) = parse_macro(line)?;
+                lex_program.macros.insert(name, body);
             },
             Token::UserSubroutine(line) => {
                 lex_program.user_subroutines.extend_from_slice(&line);
