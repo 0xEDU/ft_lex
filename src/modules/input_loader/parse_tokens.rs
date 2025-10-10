@@ -18,6 +18,10 @@ fn is_valid_identifier(name: &[u8]) -> bool {
         .all(|&c| c == b'_' || c.is_ascii_alphanumeric())
 }
 
+fn validate_regex(regex: &[u8]) -> bool {
+    true
+}
+
 fn parse_macro(line: Vec<u8>) -> Result<(Vec<u8>, Vec<u8>), LexError> {
     let names = line
         .split(|&c| c == b' ' || c == b'\t')
