@@ -3,6 +3,10 @@ use crate::{
     shared::{logger, LexError},
 };
 
+fn is_valid_regex(name: &[u8]) -> bool {
+    true
+}
+
 fn is_valid_identifier(name: &[u8]) -> bool {
     if name.is_empty() {
         return false;
@@ -31,7 +35,7 @@ fn parse_macro(line: Vec<u8>) -> Result<(Vec<u8>, Vec<u8>), LexError> {
 
     // TODO - validate if regex is valid
 
-    if names.len() != 2 || !is_valid_identifier(&names[0]) {
+    if names.len() != 2 || !is_valid_identifier(&names[0]) || !is_valid_regex(&names[1]) {
         logger::parser_error_str(format!(
             "invalid macro definition: {}",
             String::from_utf8_lossy(&line)
